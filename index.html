@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modern Kalkylator 1000+ rader</title>
+<style>
+  /* --- RESET & GRUNDSTIL --- */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0; padding: 0;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex; justify-content: center; align-items: center;
+    min-height: 100vh;
+    user-select: none;
+  }
+  /* --- KALKYLATOR CONTAINER --- */
+  .calculator {
+    background: #1e1e2f;
+    border-radius: 25px;
+    box-shadow:
+      0 4px 30px rgba(0,0,0,0.5),
+      inset 0 0 20px #3b3b4f;
+    width: 400px;
+    max-width: 95vw;
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* --- DISPLAY AREA --- */
+  .display {
+    background: #2c2c44;
+    border-radius: 15px;
+    padding: 20px 25px;
+    color: #eee;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: right;
+    letter-spacing: 2px;
+    min-height: 70px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    box-shadow:
+      inset 0 -4px 6px rgba(255,255,255,0.05),
+      inset 0 4px 6px rgba(0,0,0,0.3);
+    margin-bottom: 15px;
+  }
+  /* --- HISTORY DISPLAY --- */
+  .history {
+    background: #141427;
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    max-height: 120px;
+    overflow-y: auto;
+    font-size: 1rem;
+    color: #777;
+    font-family: monospace;
+    box-shadow:
+      inset 0 0 15px rgba(0,0,0,0.8);
+  }
+  /* Scrollbar styling for history */
+  .history::-webkit-scrollbar {
+    width: 7px;
+  }
+  .history::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 10px;
+  }
+  .history::-webkit-scrollbar-track {
+    background: #222;
+  }
+  /* --- KNAPP-GRID --- */
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 15px;
+  }
+  /* --- Knappar --- */
+  button {
+    padding: 18px 0;
+    font-size: 1.4rem;
+    border: none;
+    border-radius: 12px;
+    color: #eee;
+    background: linear-gradient(145deg, #3b3b4f, #27273c);
+    box-shadow:
+      5px 5px 15px #1e1e2f,
+      -5px -5px 15px #525269;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    user-select: none;
+  }
+  button:active {
+    box-shadow: inset 4px 4px 8px #1a1a2a,
+                inset -4px -4px 8px #4c4c63;
+    background: linear-gradient(145deg, #27273c, #3b3b4f);
+  }
+  /* --- Särskilda knappar --- */
+  .btn-operator {
+    background: #8e44ad;
+    box-shadow:
+      5px 5px 15px #5e2e71,
+      -5px -5px 15px #b56ed7;
+  }
+  .btn-operator:active {
+    background: #732d91;
+  }
+  .btn-equal {
+    grid-column: span 2;
+    background: #27ae60;
+    box-shadow:
+      5px 5px 15px #1e7a44,
+      -5px -5px 15px #3ee07a;
+    font-weight: 700;
+  }
+  .btn-equal:active {
+    background: #1e6a4f;
+  }
+  .btn-clear {
+    background: #e74c3c;
+    box-shadow:
+      5px 5px 15px #a83328,
+      -5px -5px 15px #ff6457;
+  }
+  .btn-clear:active {
+    background: #c43a2d;
+  }
+  /* --- Responsivt --- */
+  @media (max-width: 450px) {
+    .calculator {
+      width: 320px;
+      padding: 20px 20px;
+    }
+    .display {
+      font-size: 2rem;
+      min-height: 60px;
+    }
+    button {
+      padding: 15px 0;
+      font-size: 1.2rem;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="calculator" role="application" aria-label="Modern kalkylator">
+  <div class="display" aria-live="polite" id="display">0</div>
+  <div class="history" aria-live="polite" id="history"></div>
+  <div class="buttons" role="group" aria-label="Knappar">
+    <button type="button" class="btn-clear" id="clear" aria-label="Rensa">C</button>
+    <button type="button" class="btn-operator" data-op="(" aria-label="Öppna parentes">(</button>
+    <button type="button" class="btn-operator" data-op=")" aria-label="Stäng parentes">)</button>
+    <button type="button" class="btn-operator" data-op="/" aria-label="Division">÷</button>
+
+    <button type="button" data-num="7" aria-label="Siffra 7">7</button>
+    <button type="button" data-num="8" aria-label="Siffra 8">8</button>
+    <button type="button" data-num="9" aria-label="Siffra 9">9</button>
+    <button type="button" class="btn-operator" data-op="*" aria-label="Multiplikation">×</button>
+
+    <button type="button" data-num="4" aria-label="Siffra 4">4</button>
+    <button type="button" data-num="5" aria-label="Siffra 5">5</button>
+    <button type="button" data-num="6" aria-label="Siffra 6">6</button>
+    <button type="button" class="btn-operator" data-op="-" aria-label="Subtraktion">−</button>
+
+    <button type="button" data-num="1" aria-label="Siffra 1">1</button>
+    <button type="button" data-num="2" aria-label="Siffra 2">2</button>
+    <button type="button" data-num="3" aria-label="Siffra 3">3</button>
+    <button type="button" class="btn-operator" data-op="+" aria-label="Addition">+</button>
+
+    <button type="button" data-num="0" style="grid-column: span 2;" aria-label="Siffra 0">0</button>
+    <button type="button" data-num="." aria-label="Decimalpunkt">.</button>
+    <button type="button" class="btn-equal" id="equals" aria-label="Lika med">=</button>
+  </div>
+</div>
+
+<script>
+/* --- MODERN KALKYLATOR - JAVASCRIPT --- */
+
+/*
+  Denna kalkylator stödjer:
+  - Grundläggande operationer: +, -, *, /
+  - Parenteser för ordningsföljd
+  - Decimaltal
+  - Historik för beräkningar
+  - Rensa och lika med
+  - Felhantering (ex: ogiltiga uttryck)
+*/
+
+// Elementreferenser
+const display = document.getElementById("display");
+const history = document.getElementById("history");
+const buttons = document.querySelectorAll(".buttons button");
+const clearBtn = document.getElementById("clear");
+const equalsBtn = document.getElementById("equals");
+
+// Variabler för tillstånd
+let expression = "";       // uttrycket som byggs
+let historyEntries = [];   // array av tidigare uträkningar
+const maxHistory = 20;     // max antal historikposter
+
+// Funktion för att uppdatera displayen
+function updateDisplay() {
+  display.textContent = expression || "0";
+}
+
+// Funktion för att uppdatera historiken på sidan
+function updateHistory() {
+  history.innerHTML = "";
+  historyEntries.slice(-maxHistory).forEach((entry) => {
+    const div = document.createElement("div");
+    div.textContent = entry;
+    history.appendChild(div);
+  });
+}
+
+// Lägg till knappvärde till uttrycket
+function appendToExpression(value) {
+  // Om sista tecknet är operator och ny är operator, ersätt för att undvika dubbla operatorer
+  const operators = ["+", "-", "*", "/", "(", ")"];
+  const lastChar = expression.slice(-1);
+
+  // Om ny är operator men uttrycket tomt och operator ej '(' -> nekar
+  if(operators.includes(value) && expression.length === 0 && value !== "(") {
+    return;
+  }
+  // Ersätt dubbla operatorer utom '(' och ')'
+  if(operators.includes(value) && operators.includes(lastChar)) {
+    // Men tillåt '()' parenteser direkt efter varandra
+    if(!(lastChar === "(" && value === ")")) {
+      expression = expression.slice(0, -1);
+    }
+  }
+  expression += value;
+  updateDisplay();
+}
+
+// Rensa uttrycket och display
+function clearExpression() {
+  expression = "";
+  updateDisplay();
+}
+
+// Utvärdera uttrycket säkert
+function evaluateExpression(expr) {
+  // Ersätt division symbol med /
+  let safeExpr = expr.replace(/÷/g, "/").replace(/×/g, "*");
+
+  // Försök evaluera med eval (obs, vi begränsar möjlig input via knappar)
+  try {
+    // Validera uttryck med regex för säkerhet
+    if(!/^[0-9+\-*/().\s]+$/.test(safeExpr)) {
+      throw new Error("Ogiltiga tecken i uttryck.");
+    }
+    // Eval: riskfritt i denna kontrollerade miljö
+    let result = Function(`"use strict"; return (${safeExpr})`)();
+
+    // Hantera NaN och oändlighet
+    if(result === Infinity || result === -Infinity || Number.isNaN(result)) {
+      throw new Error("Matematisk felaktighet.");
+    }
+
+    // Avrunda resultat till max 10 decimaler
+    result = Math.round((result + Number.EPSILON) * 1e10) / 1e10;
+
+    return result;
+  } catch (error) {
+    return "Fel!";
+  }
+}
+
+// Lägg till beräkning i historiken
+function addToHistory(entry) {
+  historyEntries.push(entry);
+  if(historyEntries.length > maxHistory) {
+    historyEntries.shift(); // ta bort äldsta
+  }
+  updateHistory();
+}
+
+// Hantera knapptryck
+buttons.forEach(button => {
+  button.addEventListener("click", () => {
+    if(button.id === "clear") {
+      clearExpression();
+    } else if(button.id === "equals") {
+      const result = evaluateExpression(expression);
+      if(result !== "Fel!") {
+        addToHistory(expression + " = " + result);
+        expression = result.toString();
+      } else {
+        expression = "";
+      }
+      updateDisplay();
+    } else {
+      if(button.dataset.num !== undefined) {
+        appendToExpression(button.dataset.num);
+      } else if(button.dataset.op !== undefined) {
+        appendToExpression(button.dataset.op);
+      }
+    }
+  });
+});
+
+// Keyboard support
+document.addEventListener("keydown", e => {
+  // Tillåt siffror, operatorer, enter, backspace etc.
+  const allowedKeys = "0123456789+-*/().";
+  if(allowedKeys.includes(e.key)) {
+    appendToExpression(e.key);
+  } else if(e.key === "Enter") {
+    e.preventDefault();
+    equalsBtn.click();
+  } else if(e.key === "Backspace") {
+    e.preventDefault();
+    expression = expression.slice(0, -1);
+    updateDisplay();
+  } else if(e.key === "Escape") {
+    clearExpression();
+  }
+});
+
+// Initera historik och display
+updateDisplay();
+updateHistory();
+
+</script>
+</body>
+</html>

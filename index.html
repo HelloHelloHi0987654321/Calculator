@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Calculator</title>
 <style>
-  /* --- RESET & GRUNDSTIL --- */
+  /* --- RESET & BASIC STYLE --- */
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -17,7 +17,7 @@
     min-height: 100vh;
     user-select: none;
   }
-  /* --- KALKYLATOR CONTAINER --- */
+  /* --- CALCULATOR CONTAINER --- */
   .calculator {
     background: #1e1e2f;
     border-radius: 25px;
@@ -74,13 +74,13 @@
   .history::-webkit-scrollbar-track {
     background: #222;
   }
-  /* --- KNAPP-GRID --- */
+  /* --- BUTTON GRID --- */
   .buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-gap: 15px;
   }
-  /* --- Knappar --- */
+  /* --- Buttons --- */
   button {
     padding: 18px 0;
     font-size: 1.4rem;
@@ -101,7 +101,7 @@
                 inset -4px -4px 8px #4c4c63;
     background: linear-gradient(145deg, #27273c, #3b3b4f);
   }
-  /* --- Särskilda knappar --- */
+  /* --- Special buttons --- */
   .btn-operator {
     background: #8e44ad;
     box-shadow:
@@ -131,7 +131,7 @@
   .btn-clear:active {
     background: #c43a2d;
   }
-  /* --- Responsivt --- */
+  /* --- Responsive --- */
   @media (max-width: 450px) {
     .calculator {
       width: 320px;
@@ -180,36 +180,36 @@
 </div>
 
 <script>
-/* --- MODERN KALKYLATOR - JAVASCRIPT --- */
+/* --- MODERN CALCULATOR - JAVASCRIPT --- */
 
 /*
-  Denna kalkylator stödjer:
-  - Grundläggande operationer: +, -, *, /
-  - Parenteser för ordningsföljd
-  - Decimaltal
-  - Historik för beräkningar
-  - Rensa och lika med
-  - Felhantering (ex: ogiltiga uttryck)
+  This calculator supports:
+  - Basic operations: +, -, *, /
+  - Parentheses for order of operations
+  - Decimal numbers
+  - History of calculations
+  - Clear and equals buttons
+  - Error handling (e.g. invalid expressions)
 */
 
-// Elementreferenser
+// Element references
 const display = document.getElementById("display");
 const history = document.getElementById("history");
 const buttons = document.querySelectorAll(".buttons button");
 const clearBtn = document.getElementById("clear");
 const equalsBtn = document.getElementById("equals");
 
-// Variabler för tillstånd
-let expression = "";       // uttrycket som byggs
-let historyEntries = [];   // array av tidigare uträkningar
-const maxHistory = 20;     // max antal historikposter
+// State variables
+let expression = "";       // expression being built
+let historyEntries = [];   // array of past calculations
+const maxHistory = 20;     // max number of history entries
 
-// Funktion för att uppdatera displayen
+// Function to update the display
 function updateDisplay() {
   display.textContent = expression || "0";
 }
 
-// Funktion för att uppdatera historiken på sidan
+// Function to update the history on the page
 function updateHistory() {
   history.innerHTML = "";
   historyEntries.slice(-maxHistory).forEach((entry) => {
@@ -219,19 +219,19 @@ function updateHistory() {
   });
 }
 
-// Lägg till knappvärde till uttrycket
+// Add button value to the expression
 function appendToExpression(value) {
-  // Om sista tecknet är operator och ny är operator, ersätt för att undvika dubbla operatorer
+  // If last character is operator and new is operator, replace to avoid double operators
   const operators = ["+", "-", "*", "/", "(", ")"];
   const lastChar = expression.slice(-1);
 
-  // Om ny är operator men uttrycket tomt och operator ej '(' -> nekar
+  // If new is operator but expression empty and operator isn't '(' -> deny
   if(operators.includes(value) && expression.length === 0 && value !== "(") {
     return;
   }
-  // Ersätt dubbla operatorer utom '(' och ')'
+  // Replace double operators except '(' and ')'
   if(operators.includes(value) && operators.includes(lastChar)) {
-    // Men tillåt '()' parenteser direkt efter varandra
+    // But allow '()' parentheses directly after each other
     if(!(lastChar === "(" && value === ")")) {
       expression = expression.slice(0, -1);
     }
@@ -240,57 +240,57 @@ function appendToExpression(value) {
   updateDisplay();
 }
 
-// Rensa uttrycket och display
+// Clear expression and display
 function clearExpression() {
   expression = "";
   updateDisplay();
 }
 
-// Utvärdera uttrycket säkert
+// Evaluate expression safely
 function evaluateExpression(expr) {
-  // Ersätt division symbol med /
+  // Replace division symbol with /
   let safeExpr = expr.replace(/÷/g, "/").replace(/×/g, "*");
 
-  // Försök evaluera med eval (obs, vi begränsar möjlig input via knappar)
+  // Try to evaluate with eval (note, input is restricted via buttons)
   try {
-    // Validera uttryck med regex för säkerhet
+    // Validate expression with regex for safety
     if(!/^[0-9+\-*/().\s]+$/.test(safeExpr)) {
-      throw new Error("Ogiltiga tecken i uttryck.");
+      throw new Error("Invalid characters in expression.");
     }
-    // Eval: riskfritt i denna kontrollerade miljö
+    // Eval: safe in this controlled environment
     let result = Function(`"use strict"; return (${safeExpr})`)();
 
-    // Hantera NaN och oändlighet
+    // Handle NaN and infinity
     if(result === Infinity || result === -Infinity || Number.isNaN(result)) {
-      throw new Error("Matematisk felaktighet.");
+      throw new Error("Mathematical error.");
     }
 
-    // Avrunda resultat till max 10 decimaler
+    // Round result to max 10 decimals
     result = Math.round((result + Number.EPSILON) * 1e10) / 1e10;
 
     return result;
   } catch (error) {
-    return "Fel!";
+    return "Error!";
   }
 }
 
-// Lägg till beräkning i historiken
+// Add calculation to history
 function addToHistory(entry) {
   historyEntries.push(entry);
   if(historyEntries.length > maxHistory) {
-    historyEntries.shift(); // ta bort äldsta
+    historyEntries.shift(); // remove oldest
   }
   updateHistory();
 }
 
-// Hantera knapptryck
+// Handle button clicks
 buttons.forEach(button => {
   button.addEventListener("click", () => {
     if(button.id === "clear") {
       clearExpression();
     } else if(button.id === "equals") {
       const result = evaluateExpression(expression);
-      if(result !== "Fel!") {
+      if(result !== "Error!") {
         addToHistory(expression + " = " + result);
         expression = result.toString();
       } else {
@@ -309,7 +309,7 @@ buttons.forEach(button => {
 
 // Keyboard support
 document.addEventListener("keydown", e => {
-  // Tillåt siffror, operatorer, enter, backspace etc.
+  // Allow numbers, operators, enter, backspace etc.
   const allowedKeys = "0123456789+-*/().";
   if(allowedKeys.includes(e.key)) {
     appendToExpression(e.key);
@@ -325,7 +325,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
-// Initera historik och display
+// Initialize history and display
 updateDisplay();
 updateHistory();
 
